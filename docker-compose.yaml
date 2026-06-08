@@ -1,0 +1,170 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - "5173:5173"
+    depends_on:
+      - kong
+
+  kong:
+    image: kong:3.7
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    volumes:
+      - ./api-gateway/kong.yml:/kong/declarative/kong.yml:ro
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      - auth
+      - profile
+      - ingredient
+      - recipe
+      - meal-plan
+      - progress
+      - notification
+
+  auth:
+    build:
+      context: ./services/auth
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: auth
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/auth?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  profile:
+    build:
+      context: ./services/profile
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: profile
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/profile?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  ingredient:
+    build:
+      context: ./services/ingredient
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: ingredient
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/ingredient?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  recipe:
+    build:
+      context: ./services/recipe
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: recipe
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/recipe?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  meal-plan:
+    build:
+      context: ./services/meal-plan
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: meal-plan
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/meal_plan?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  progress:
+    build:
+      context: ./services/progress
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: progress
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/progress?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  notification:
+    build:
+      context: ./services/notification
+    environment:
+      APP_ENV: local
+      SERVICE_NAME: notification
+      PORT: 8080
+      DATABASE_URL: postgres://foodier:foodier@postgres:5432/notification?sslmode=disable
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://foodier:foodier@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: foodier
+      POSTGRES_PASSWORD: foodier
+      POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_DATABASES: auth,profile,ingredient,recipe,meal_plan,progress,notification
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deployments/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh:ro
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: foodier
+      RABBITMQ_DEFAULT_PASS: foodier
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  postgres-data:
+

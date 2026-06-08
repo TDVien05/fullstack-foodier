@@ -1,0 +1,60 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: auth
+    url: http://auth:8080
+    routes:
+      - name: auth-api
+        paths:
+          - /api/v1/auth
+        strip_path: true
+
+  - name: profile
+    url: http://profile:8080
+    routes:
+      - name: profile-api
+        paths:
+          - /api/v1/profile
+        strip_path: true
+
+  - name: ingredient
+    url: http://ingredient:8080
+    routes:
+      - name: ingredient-api
+        paths:
+          - /api/v1/ingredient
+        strip_path: true
+
+  - name: recipe
+    url: http://recipe:8080
+    routes:
+      - name: recipe-api
+        paths:
+          - /api/v1/recipe
+        strip_path: true
+
+  - name: meal-plan
+    url: http://meal-plan:8080
+    routes:
+      - name: meal-plan-api
+        paths:
+          - /api/v1/meal-plan
+        strip_path: true
+
+  - name: progress
+    url: http://progress:8080
+    routes:
+      - name: progress-api
+        paths:
+          - /api/v1/progress
+        strip_path: true
+
+  - name: notification
+    url: http://notification:8080
+    routes:
+      - name: notification-api
+        paths:
+          - /api/v1/notification
+        strip_path: true
+
